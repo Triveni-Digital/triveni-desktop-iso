@@ -19,6 +19,10 @@ readonly REQUIRED_DEBS=(
   "libva-drm1|libva-drm2"
   "libvdpau1"
   "libatomic1"
+  "libnppc12" 
+  "libnppicc12" 
+  "libnppig12" 
+  "libnpps12"
 )
 
 require_root() {
