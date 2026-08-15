@@ -4,37 +4,18 @@
 
 		<target name="print-vars">
 			<echo message="BASE_ISO_FILE: ${BASE_ISO_FILE}"/>
-			<echo message="DRIVERS_DIR: ${DRIVERS_DIR}"/>
-			<echo message="SSMT_DEB_DIR: ${SSMT_DEB_DIR}"/>
-			<echo message="SSXM_DEB_DIR: ${SSXM_DEB_DIR}"/>
+			<echo message="DEB_DIRS: ${DEB_DIRS}"/>
 		</target>
 
         <target name="buildiso" depends="print-vars">
                 <exec executable="bash" >
-			<arg value="./create-install-iso.sh" />
+			<arg value="./create-iso.sh" />
 
 			<arg value="-i" if:set="BASE_ISO_FILE"/>
 			<arg value="${BASE_ISO_FILE}" if:set="BASE_ISO_FILE"/>
 
-			<arg value="-d" if:set="DRIVERS_DIR"/>
-			<arg value="${DRIVERS_DIR}" if:set="DRIVERS_DIR"/>
-
-			<arg value="-m" if:set="SSMT_DEB_DIR"/>
-			<arg value="${SSMT_DEB_DIR}" if:set="SSMT_DEB_DIR"/>
-
-			<arg value="-x" if:set="SSXM_DEB_DIR"/>
-			<arg value="${SSXM_DEB_DIR}" if:set="SSXM_DEB_DIR"/>
-
-			<!-- TODO
-                        <arg value="-r" if:set="SSRM_DEB_DIR"/>
-			<arg value="${SSRM_DEB_DIR}" if:set="SSRM_DEB_DIR"/>
-
-			<arg value="-g" if:set="GUIDE_BUILDER_DEB_DIR"/>
-			<arg value="${GUIDE_BUILDER_DEB_DIR}" if:set="GUIDE_BUILDER_DEB_DIR"/>
-
-			<arg value="-e" if:set="ENTERPRISE_DEB_DIR"/>
-			<arg value="${ENTERPRISE_DEB_DIR}" if:set="ENTERPRISE_DEB_DIR"/>
-                        -->
+			<arg value="-p" if:set="DEB_DIRS"/>
+			<arg value="${DEB_DIRS}" if:set="DEB_DIRS"/>
 		</exec>
         </target>
 </project>

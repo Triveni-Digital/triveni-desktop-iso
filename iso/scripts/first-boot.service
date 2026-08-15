@@ -1,0 +1,19 @@
+[Unit]
+Description=Triveni first-boot setup and component installation
+Wants=network-online.target
+After=network-online.target
+Before=display-manager.service
+Before=graphical.target
+ConditionPathExists=!/var/lib/triveni/.first-boot-complete
+
+[Service]
+Type=notify
+NotifyAccess=all
+ExecStart=/var/triveni/install/first-boot.sh
+StandardOutput=journal+console
+StandardError=journal+console
+TimeoutStartSec=infinity
+RemainAfterExit=no
+
+[Install]
+WantedBy=graphical.target

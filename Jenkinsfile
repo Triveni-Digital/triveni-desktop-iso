@@ -4,14 +4,12 @@ pipeline {
             // This tells Jenkins exactly which file to use
             filename 'Dockerfile'
             // Ensures permissions are correct for the 'jenkins' user
-            args '-u 110:110 -e HOME=${WORKSPACE} -v /var/lib/jenkins/userContent:/mnt/userContent'
+            args '--privileged -e HOME=${WORKSPACE} -v /var/lib/jenkins/userContent:/mnt/userContent'
         }
     }
     parameters {
         string(name: 'BASE_ISO_FILE', defaultValue: params.BASE_ISO_FILE ?: '', description: 'Path to Base ISO')
-        string(name: 'DRIVERS_DIR', defaultValue: params.DRIVERS_DIR ?: '', description: 'Path to Drivers Directory')
-        string(name: 'SSMT_DEB_DIR', defaultValue: params.SSMT_DEB_DIR ?: '', description: 'Path to MT Debian')
-        string(name: 'SSXM_DEB_DIR', defaultValue: params.SSXM_DEB_DIR ?: '', description: 'Path to XM Debian')
+        string(name: 'DEB_DIRS', defaultValue: params.DEB_DIRS ?: '', description: 'Colon-separated directories containing Debian packages')
     }
     environment {
         FAILED_STAGE = "Initialization / Agent Setup"
@@ -22,8 +20,7 @@ pipeline {
         stage('Build Combo ISO') {
             steps {
                 script { env.FAILED_STAGE = "Build Combo ISO" }
-                sh "ant -DBASE_ISO_FILE=${params.BASE_ISO_FILE} -DDRIVERS_DIR=${params.DRIVERS_DIR} \
-                -DSSMT_DEB_DIR=${params.SSMT_DEB_DIR} -DSSXM_DEB_DIR=${params.SSXM_DEB_DIR}"
+                sh "ant -DBASE_ISO_FILE=${params.BASE_ISO_FILE} -DDEB_DIRS=${params.DEB_DIRS}"
             }
         }
     }

@@ -1,0 +1,13 @@
+# Downloaded to the ISO but NOT installed; the target installs only the branch that
+# matches its GPU (see 20-in-target-late-commands.sh and branch-packages).
+#
+# 470 is listed by component on purpose: on noble the nvidia-driver-470 metapackage
+# has been turned into a transitional package that pulls nvidia-driver-535, and 535
+# dropped Kepler support, so the metapackage would leave a GT 710 broken.
+#   470 - Kepler (GT 710) through Ampere
+#   580 - Maxwell through Blackwell; last branch supporting Pascal (GTX 1080)
+xserver-xorg-video-nvidia-470
+nvidia-dkms-470
+libnvidia-gl-470
+nvidia-utils-470
+nvidia-driver-580

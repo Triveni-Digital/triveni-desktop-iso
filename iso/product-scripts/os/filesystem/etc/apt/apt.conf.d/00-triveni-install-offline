@@ -1,0 +1,4 @@
+# Temporary installer policy. This file is removed during first boot.
+Dir::Etc::sourcelist "/etc/apt/sources.list.d/triveni-offline.list";
+Dir::Etc::sourceparts "/dev/null";
+Acquire::Retries "0";

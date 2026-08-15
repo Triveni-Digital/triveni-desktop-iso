@@ -18,9 +18,7 @@ HOST_WORKSPACE_DIR="$(pwd)"
 
 CONTAINER_USER_CONTENT="/mnt/userContent"
 CONT_BASE_ISO="${CONTAINER_USER_CONTENT}/ubuntu-24.04-desktop-amd64.iso"
-CONT_DRIVERS_DIR="${CONTAINER_USER_CONTENT}/triveni-drivers"
-CONT_SSMT_DIR="${CONTAINER_USER_CONTENT}/mt"
-CONT_SSXM_DIR="${CONTAINER_USER_CONTENT}/xm"
+CONT_DEB_DIRS="${CONTAINER_USER_CONTENT}/mt:${CONTAINER_USER_CONTENT}/xm"
 # ==========================================
 
 echo "🐳 Building Docker image..."
@@ -28,13 +26,12 @@ docker build -f Dockerfile -t "$IMAGE_NAME" .
 
 echo "🚀 Running ISO generator container..."
 docker run --rm \
+  --privileged \
   -v "${HOST_MOUNT_DIR}:${CONTAINER_USER_CONTENT}" \
   -v "${HOST_WORKSPACE_DIR}:/workspace" \
   -e BASE_ISO_FILE="$CONT_BASE_ISO" \
-  -e SSMT_DEB_DIR="$CONT_SSMT_DIR" \
-  -e SSXM_DEB_DIR="$CONT_SSXM_DIR" \
-  -e DRIVERS_DIR="$CONT_DRIVERS_DIR" \
+  -e DEB_DIRS="$CONT_DEB_DIRS" \
   "$IMAGE_NAME" \
-  sh -c "ant -DBASE_ISO_FILE=\$BASE_ISO_FILE -DDRIVERS_DIR=\$DRIVERS_DIR -DSSMT_DEB_DIR=\$SSMT_DEB_DIR -DSSXM_DEB_DIR=\$SSXM_DEB_DIR"
+  sh -c "ant -DBASE_ISO_FILE=\$BASE_ISO_FILE -DDEB_DIRS=\$DEB_DIRS"
 
 ./qemu-run-iso.sh -d

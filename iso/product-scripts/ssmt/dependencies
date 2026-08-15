@@ -1,0 +1,6 @@
+# SSMT requires Java 8 specifically; do not substitute a newer JRE.
+openjdk-8-jre
+update-notifier
+libva-drm|libva-drm2
+libva-x11|libva-x11-2
+gir1.2-appindicator3-0.1

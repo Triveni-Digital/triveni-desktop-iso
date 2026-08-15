@@ -26,7 +26,7 @@ RUN apt update && apt install -y \
     libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev \
     openssl libevent-dev libnspr4-dev libnuma-dev 
 
-RUN apt install -y xorriso fdisk
+RUN apt install -y xorriso fdisk squashfs-tools mount
 
 WORKDIR /workspace
 

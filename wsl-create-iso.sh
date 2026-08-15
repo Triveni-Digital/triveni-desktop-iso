@@ -2,17 +2,15 @@
 
 set -e
 
-../update-docker-mount.sh
+# ../update-docker-mount.sh
 
 HOST_MOUNT_DIR="/home/triveni/docker-mount"
 BASE_ISO="${HOST_MOUNT_DIR}/ubuntu-24.04-desktop-amd64.iso"
-DRIVERS_DIR="${HOST_MOUNT_DIR}/triveni-drivers"
-SSMT_DIR="${HOST_MOUNT_DIR}/mt"
-SSXM_DIR="${HOST_MOUNT_DIR}/xm"
+DEB_DIRS="${HOST_MOUNT_DIR}/triveni-drivers/24.04/main:${HOST_MOUNT_DIR}/mt:${HOST_MOUNT_DIR}/xm"
 
-./create-install-iso.sh -i "$BASE_ISO" \
-  -d "$DRIVERS_DIR" \
-  -m "$SSMT_DIR" \
-  -x "$SSXM_DIR"
+sudo ./create-iso.sh -i "$BASE_ISO" \
+  -p "$DEB_DIRS"
 
-./qemu-run-iso.sh -d
+sleep 5
+
+./qemu-run-iso.sh -n -d

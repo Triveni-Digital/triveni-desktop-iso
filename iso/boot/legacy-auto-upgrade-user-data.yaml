@@ -1,0 +1,53 @@
+#cloud-config
+autoinstall:
+  version: 1
+  early-commands:
+    - /cdrom/scripts/early-commands.sh
+    - /cdrom/scripts/select-installer-nic.sh
+  refresh-installer:
+    update: no
+  drivers:
+    install: false
+  apt:
+    disable_suites: [security, updates, backports]
+    preserve_sources_list: true
+    geoip: false
+  identity:
+    hostname: streamscope
+    password: $6$u6slVnS15m$BeFZZAbp477XBu9Btar7YJ2BSfMWQx4BTlgBQDuq0ZS8yJqbbyc4hN44VtxLitU/IY1L6fhTJkcWj3y6HiNSB1
+    realname: Triveni Digital
+    username: triveni
+  locale: en_US.UTF-8
+  network:
+    version: 2
+    ethernets: {}
+  storage:
+    version: 1
+    config:
+    - {type: disk, id: disk-root, ptable: gpt, match: {path: "/dev/[sv]da"}, wipe: superblock-recursive, preserve: false, name: '', grub_device: true}
+    - {type: partition, id: partition-0, device: disk-root, size: 1048576, flag: bios_grub, number: 1, preserve: false, grub_device: false}
+    - {type: partition, id: partition-1, device: disk-root, size: 40G, wipe: superblock, flag: '', number: 2, preserve: false, grub_device: false}
+    - {type: partition, id: partition-2, device: disk-root, size: -1, wipe: superblock, flag: '', number: 3, preserve: false, grub_device: false}
+    - {fstype: ext4, volume: partition-1, preserve: false, type: format, id: format-0, label: root}
+    - {fstype: ext4, volume: partition-2, preserve: false, type: format, id: format-1, label: triveni}
+    - {path: /, device: format-0, type: mount, id: mount-0}
+    - {path: /var/triveni, device: format-1, type: mount, id: mount-1}
+  user-data:
+    disable_root: false
+    # cloud-config sets the timezone after guidebuilder has started
+    # modify scripts/late-command.sh to change
+    timezone: America/New_York
+  kernel:
+    package: linux-image-6.8.0-31-generic
+  late-commands:
+    - /cdrom/scripts/late-commands.sh --skip-product-scripts
+    - curtin in-target --target=/target -- /cdrom/scripts/in-target-late-commands.sh
+    - curtin in-target --target=/target -- /cdrom/scripts/rename-ifaces.sh
+    - curtin in-target --target=/target -- /cdrom/scripts/finalize-os.sh
+    - sync
+    - sleep 3
+  #shutdown: 'poweroff'
+  shutdown: 'reboot'
+
+# to find errors in this script:
+# tail -n 50 /var/log/installer/subiquity-server-debug.log

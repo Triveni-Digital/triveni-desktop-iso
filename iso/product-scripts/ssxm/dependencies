@@ -1,0 +1,14 @@
+pcscd
+libengine-pkcs11-openssl
+opensc
+opensc-pkcs11
+default-jre-headless|openjdk-21-jre-headless|openjdk-17-jre-headless|openjdk-11-jre-headless|java8-runtime-headless|openjdk-8-jdk-headless|openjdk-8-jre|openjdk-8-jre-headless
+libva1|libva2
+libva-x11-1|libva-x11-2
+libva-drm1|libva-drm2
+libvdpau1
+libatomic1
+libnppc12
+libnppicc12
+libnppig12
+libnpps12
