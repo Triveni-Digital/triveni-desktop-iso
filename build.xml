@@ -8,7 +8,7 @@
 		</target>
 
         <target name="buildiso" depends="print-vars">
-                <exec executable="bash" >
+		<exec executable="bash" failonerror="true">
 			<arg value="./create-iso.sh" />
 
 			<arg value="-i" if:set="BASE_ISO_FILE"/>

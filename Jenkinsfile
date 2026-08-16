@@ -3,8 +3,8 @@ pipeline {
         dockerfile {
             // This tells Jenkins exactly which file to use
             filename 'Dockerfile'
-            // Ensures permissions are correct for the 'jenkins' user
-            args '--privileged -e HOME=${WORKSPACE} -v /var/lib/jenkins/userContent:/mnt/userContent'
+            // ISO assembly mounts filesystems and therefore must run as root.
+            args '--user 0:0 --privileged -e HOME=${WORKSPACE} -v /var/lib/jenkins/userContent:/mnt/userContent'
         }
     }
     parameters {
