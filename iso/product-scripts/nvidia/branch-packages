@@ -1,4 +1,3 @@
 # <branch> <packages to install for that branch>
 # Consulted by 20-in-target-late-commands.sh once the GPU's branch is known.
-470 xserver-xorg-video-nvidia-470 nvidia-dkms-470 libnvidia-gl-470 nvidia-utils-470
 580 nvidia-driver-580

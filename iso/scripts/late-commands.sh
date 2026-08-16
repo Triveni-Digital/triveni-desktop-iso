@@ -84,6 +84,7 @@ install_first_boot_service() {
 		mkdir -p /target/etc/systemd/system
 		mkdir -p /target/etc/systemd/system/graphical.target.wants
 		cp -a "$TARGET_FIRST_BOOT_SERVICE" /target/etc/systemd/system/first-boot.service
+		chmod 0644 /target/etc/systemd/system/first-boot.service
 		ln -sf /etc/systemd/system/first-boot.service /target/etc/systemd/system/graphical.target.wants/first-boot.service
 	fi
 }
@@ -100,6 +101,7 @@ copy_first_boot_payloads() {
 		echo "Copying first-boot.service into $TARGET_FIRST_BOOT_SERVICE"
 		mkdir -p "$TARGET_INSTALL_ROOT"
 		cp -a /cdrom/scripts/first-boot.service "$TARGET_FIRST_BOOT_SERVICE"
+		chmod 0644 "$TARGET_FIRST_BOOT_SERVICE"
 	fi
 }
 

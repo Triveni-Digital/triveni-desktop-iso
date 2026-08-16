@@ -13,6 +13,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 readonly LOCAL_CHROME_DIR="/var/triveni/install"
 readonly SOURCES_FILE="/etc/apt/sources.list.d/triveni-offline.list"
+readonly EMPTY_SOURCEPARTS_DIR="/var/lib/triveni/empty-sources.list.d"
 
 # Pinning apt to the offline repo keeps this from reaching the network, without
 # --no-download, which cannot install from a file: repo's relative Filename.
@@ -22,7 +23,7 @@ readonly APT_OPTS=(
 	-o Acquire::Retries=0
 	-o APT::Get::List-Cleanup=0
 	-o Dir::Etc::sourcelist="$SOURCES_FILE"
-	-o Dir::Etc::sourceparts=/dev/null
+	-o Dir::Etc::sourceparts="$EMPTY_SOURCEPARTS_DIR"
 )
 
 
@@ -59,10 +60,13 @@ disable_chrome_repo_sources() {
 	# so subsequent installer apt updates do not depend on that host.
 	rm -f /etc/apt/sources.list.d/google-chrome.list
 	rm -f /etc/apt/sources.list.d/google-chrome.sources
+	rm -f "$EMPTY_SOURCEPARTS_DIR/google-chrome.list"
+	rm -f "$EMPTY_SOURCEPARTS_DIR/google-chrome.sources"
 }
 
 main() {
 	require_commands
+	mkdir -p "$EMPTY_SOURCEPARTS_DIR"
 
 	if dpkg -s google-chrome-stable >/dev/null 2>&1; then
 		echo "[chrome/in-target-late-commands] Google Chrome already installed"

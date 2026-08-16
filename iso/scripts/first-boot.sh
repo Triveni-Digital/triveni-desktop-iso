@@ -4,14 +4,17 @@
 set -uo pipefail
 
 readonly LOG_FILE="/var/log/triveni-install.log"
-readonly FIRST_BOOT_ROOT="/var/triveni/install/first-boot.sh"
-readonly COMPONENT_ROOT="/var/triveni/install/product-scripts"
+readonly INSTALL_ROOT="/var/triveni/install"
+readonly FIRST_BOOT_ROOT="$INSTALL_ROOT/first-boot.sh"
+readonly FIRST_BOOT_SERVICE="$INSTALL_ROOT/first-boot.service"
+readonly COMPONENT_ROOT="$INSTALL_ROOT/product-scripts"
 readonly STAMP_DIR="/var/lib/triveni"
 readonly STAMP_FILE="$STAMP_DIR/.first-boot-complete"
 readonly SERVICE_NAME="first-boot.service"
 readonly UNATTENDED_UPGRADE="/usr/bin/unattended-upgrade"
 readonly SAVED_UNATTENDED_UPGRADE="${UNATTENDED_UPGRADE}.triveni-original"
 readonly OFFLINE_APT_CONFIG="/etc/apt/apt.conf.d/00-triveni-install-offline"
+readonly EMPTY_SOURCEPARTS_DIR="/var/lib/triveni/empty-sources.list.d"
 
 notify_status() {
     if command -v systemd-notify >/dev/null 2>&1 && systemd-notify --booted >/dev/null 2>&1; then
@@ -31,6 +34,7 @@ notify_status "Starting first-boot setup"
 if [ -f "$STAMP_FILE" ]; then
     echo "[first-boot] First-boot tasks already completed, exiting"
     rm -f "$OFFLINE_APT_CONFIG"
+    rm -rf "$EMPTY_SOURCEPARTS_DIR"
     notify_status "First-boot already complete"
     systemctl disable "$SERVICE_NAME" >/dev/null 2>&1 || true
     exit 0
@@ -94,10 +98,30 @@ fi
 
 echo "[first-boot] Completed component first-boot scan: ${total_scripts} script(s), ${failed_scripts} failure(s)."
 rm -f "$OFFLINE_APT_CONFIG"
+rm -rf "$EMPTY_SOURCEPARTS_DIR"
 echo "[first-boot] Restored normal apt source selection"
+
+if [ "$failed_scripts" -ne 0 ]; then
+    echo "[first-boot][error] First-boot tasks failed; keeping installer payloads for retry"
+    notify_status "First-boot failed: ${failed_scripts} component(s)"
+    exit 1
+fi
+
 echo "[first-boot] Writing completion stamp"
 notify_status "Finalizing first-boot setup"
-touch "$STAMP_FILE" || true
+if ! touch "$STAMP_FILE"; then
+    echo "[first-boot][error] Could not write completion stamp; keeping installer payloads for retry"
+    notify_status "First-boot failed: completion stamp"
+    exit 1
+fi
+
+echo "[first-boot] Removing completed first-boot installer payloads"
+if ! rm -rf "$COMPONENT_ROOT" || ! rm -f "$FIRST_BOOT_SERVICE" "$FIRST_BOOT_ROOT"; then
+    rm -f "$STAMP_FILE"
+    echo "[first-boot][error] Could not remove every first-boot installer payload"
+    notify_status "First-boot failed: installer payload cleanup"
+    exit 1
+fi
 systemctl disable "$SERVICE_NAME" >/dev/null 2>&1 || true
 
 echo "[first-boot] First-boot tasks completed"

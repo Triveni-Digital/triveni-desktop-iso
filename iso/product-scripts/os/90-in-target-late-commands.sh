@@ -11,6 +11,7 @@ export LC_ALL=C
 readonly APT_BACKUP_DIR="/var/triveni/apt-backup"
 readonly REPO_DEST="/var/triveni/packages"
 readonly SOURCES_FILE="/etc/apt/sources.list.d/triveni-offline.list"
+readonly EMPTY_SOURCEPARTS_DIR="/var/lib/triveni/empty-sources.list.d"
 
 warn() { echo "[apt-restore][warn] $*" >&2; }
 log() { echo "[apt-restore] $*"; }
@@ -47,6 +48,8 @@ fi
 
 # google-chrome and the drivers installer both add repos that stall without network.
 rm -f /etc/apt/sources.list.d/google-chrome.list \
-      /etc/apt/sources.list.d/google-chrome.sources
+    /etc/apt/sources.list.d/google-chrome.sources \
+    "$EMPTY_SOURCEPARTS_DIR/google-chrome.list" \
+    "$EMPTY_SOURCEPARTS_DIR/google-chrome.sources"
 
 exit 0

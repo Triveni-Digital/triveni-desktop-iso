@@ -13,6 +13,7 @@ readonly REPO_DEST="/var/triveni/packages"
 readonly SOURCES_FILE="/etc/apt/sources.list.d/triveni-offline.list"
 readonly OFFLINE_APT_CONFIG="/etc/apt/apt.conf.d/00-triveni-install-offline"
 readonly OFFLINE_APT_CONFIG_SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/filesystem/etc/apt/apt.conf.d/00-triveni-install-offline"
+readonly EMPTY_SOURCEPARTS_DIR="/var/lib/triveni/empty-sources.list.d"
 readonly KERNEL_PIN_FILE="/etc/apt/preferences.d/99-kernel-6.8-only.pref"
 readonly UNATTENDED_UPGRADE="/usr/bin/unattended-upgrade"
 
@@ -55,6 +56,7 @@ printf 'deb [trusted=yes] file:%s ./\n' "$repo_dir" > "$SOURCES_FILE"
 # This applies to apt calls launched by package maintainer scripts too.
 if [ -f "$OFFLINE_APT_CONFIG_SRC" ]; then
     mkdir -p "$(dirname "$OFFLINE_APT_CONFIG")"
+    mkdir -p "$EMPTY_SOURCEPARTS_DIR"
     cp -a "$OFFLINE_APT_CONFIG_SRC" "$OFFLINE_APT_CONFIG"
     log "Restricted apt to the offline repository until first boot completes"
 else
@@ -106,8 +108,9 @@ if ! compgen -G '/boot/vmlinuz-6.8.*-generic' >/dev/null; then
     exit 1
 fi
 
-held_kernel_packages="$(dpkg-query -W -f='${binary:Package}\n' \
-    'linux-image-6.8.*' 'linux-headers-6.8.*' 'linux-modules-6.8.*' 'linux-modules-extra-6.8.*' 2>/dev/null)"
+held_kernel_packages="$(dpkg-query -W -f='${binary:Package} ${db:Status-Abbrev}\n' \
+    'linux-image-6.8.*' 'linux-headers-6.8.*' 'linux-modules-6.8.*' 'linux-modules-extra-6.8.*' 2>/dev/null |
+    awk '$2 ~ /^ii/ {print $1}')"
 if [ -n "$held_kernel_packages" ]; then
     # shellcheck disable=SC2086
     apt-mark hold $held_kernel_packages || warn "Could not hold the 6.8 kernel packages"

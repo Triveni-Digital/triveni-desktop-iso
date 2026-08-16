@@ -139,6 +139,39 @@ prepare_workspace() {
     chmod -R +w "$ISO_DIR"
 }
 
+prepare_product_scripts() {
+    mkdir -p "$WORK_DIR/target-product-scripts"
+    cp -a iso/product-scripts/. "$WORK_DIR/target-product-scripts/"
+    apply_product_script_overrides
+}
+
+apply_product_script_overrides() {
+    local deb_dir deb_file product_name product_scripts_source
+    local -a deb_dirs=()
+    local -A replaced_products=()
+
+    IFS=':' read -r -a deb_dirs <<< "$DEB_DIRS"
+    for deb_dir in "${deb_dirs[@]}"; do
+        product_scripts_source="$deb_dir/iso/24.04/desktop"
+        [ -d "$product_scripts_source" ] || continue
+
+        shopt -s nullglob
+        local debs=("$deb_dir"/*.deb)
+        shopt -u nullglob
+        for deb_file in "${debs[@]}"; do
+            product_name="$(basename "$deb_file")"
+            product_name="${product_name%%_*}"
+            [ -z "${replaced_products[$product_name]+x}" ] || continue
+            replaced_products[$product_name]=1
+
+            rm -rf "$WORK_DIR/target-product-scripts/$product_name"
+            mkdir -p "$WORK_DIR/target-product-scripts/$product_name"
+            cp -a "$product_scripts_source/." "$WORK_DIR/target-product-scripts/$product_name/"
+            log "Using product scripts from $product_scripts_source for $product_name"
+        done
+    done
+}
+
 validate_autoinstall_kernel_packages() {
     local manifest="$ISO_DIR/casper/filesystem.manifest"
     local profile
@@ -165,10 +198,7 @@ stage_payloads() {
     cp -Ra iso/extras "$ISO_DIR/pool/os-extras/"
     cp -Ra iso/scripts/. "$ISO_DIR/scripts/" 2>/dev/null || true
     mkdir -p "$ISO_DIR/scripts/product-scripts"
-    cp -a iso/product-scripts/. "$ISO_DIR/scripts/product-scripts/"
-    if [ -d "$WORK_DIR/target-product-scripts" ]; then
-        cp -a "$WORK_DIR/target-product-scripts/." "$ISO_DIR/scripts/product-scripts/"
-    fi
+    cp -a "$WORK_DIR/target-product-scripts/." "$ISO_DIR/scripts/product-scripts/"
 
     cp -a "${DEB_FILES[@]}" "$ISO_DIR/pool/install/"
     find iso/debs -maxdepth 1 -type f -name '*.deb' -exec cp -a {} "$ISO_DIR/pool/install/" \;
@@ -222,7 +252,7 @@ EOF
     # support-only components such as nvidia can declare dependencies too.
     : > "$WORK_DIR/product-package-groups"
     shopt -s nullglob
-    for dependencies_file in iso/product-scripts/*/dependencies; do
+    for dependencies_file in "$WORK_DIR"/target-product-scripts/*/dependencies; do
         awk '
             {
                 sub(/[[:space:]]*#.*/, "")
@@ -258,7 +288,7 @@ collect_cache_only_packages() {
 
     : > "$WORK_DIR/product-package-cache-only"
     shopt -s nullglob
-    for dependencies_file in iso/product-scripts/*/dependencies-cache-only; do
+    for dependencies_file in "$WORK_DIR"/target-product-scripts/*/dependencies-cache-only; do
         awk '
             {
                 sub(/[[:space:]]*#.*/, "")
@@ -376,9 +406,11 @@ main() {
     compute_output_name
     prepare_workspace
     validate_autoinstall_kernel_packages
+    prepare_product_scripts
     collect_product_package_groups
     collect_product_deb_dependencies
     collect_cache_only_packages
+    apply_product_script_overrides
     stage_payloads
     prepare_rootfs
     install_into_rootfs

@@ -18,6 +18,15 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+if dpkg --audit | grep -q .; then
+	echo "[ssxm/install] Repairing incomplete package configuration"
+	if ! dpkg --configure -a; then
+		echo "[ssxm/install][error] Incomplete packages could not be configured" >&2
+		#exit 1
+	fi
+fi
+
+
 # Install only the last matching local SSXM package in ROOT_DIR, if /opt/ssxm exists.
 shopt -s nullglob
 ssxm_debs=("$ROOT_DIR"/ssxm_*.deb)

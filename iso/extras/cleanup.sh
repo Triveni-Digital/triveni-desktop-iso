@@ -16,6 +16,7 @@ readonly APT_BACKUP_DIR="/var/triveni/apt-backup"
 readonly KEEP_LOCALE="en"
 
 ASSUME_DEFAULTS=false
+OFFLINE_REPO_DEFAULT="n"
 
 warn() { echo "  [warn] $*" >&2; }
 info() { echo "  $*"; }
@@ -69,6 +70,13 @@ confirm() {
     esac
 }
 
+set_offline_repo_default() {
+    if command -v curl >/dev/null 2>&1 &&
+        curl -fsS --connect-timeout 3 --max-time 5 -o /dev/null https://archive.ubuntu.com/ubuntu/; then
+        OFFLINE_REPO_DEFAULT="y"
+    fi
+}
+
 human_size() {
     [ -e "$1" ] || { echo "0"; return; }
     du -sh "$1" 2>/dev/null | cut -f1
@@ -120,12 +128,15 @@ reindex_repo() {
 
 print_plan() {
     local plan_row='  %3s  %-28s %-34s [%s]\n'
+    local offline_repo_default="no"
+    [ "$OFFLINE_REPO_DEFAULT" = "y" ] && offline_repo_default="yes"
+
     echo "======================================================================"
     echo "Triveni post-install cleanup"
     echo "======================================================================"
     echo "Nothing is removed without your approval. You will be asked about:"
     echo
-    printf "$plan_row" "1."  "Offline package repository" "$REPO_DIR" "yes"
+    printf "$plan_row" "1."  "Offline package repository" "$REPO_DIR" "$offline_repo_default"
     printf "$plan_row" "1a." "Cached NVIDIA driver debs"  "keep for a later GPU swap" "no"
     printf "$plan_row" "2."  "Old kernels and modules"    "superseded by the running kernel" "yes"
     printf "$plan_row" "3."  "Unused bundled driver debs" "hardware not present" "yes"
@@ -146,6 +157,7 @@ print_plan() {
     printf '\n\n'
 }
 
+set_offline_repo_default
 print_plan
 
 # ------------------------------------------------------------- 1. offline repo
@@ -161,7 +173,7 @@ if [ -d "$REPO_DIR" ]; then
     echo "    Needed only to install or repair packages without a network connection."
     effect "apt can no longer install or repair packages offline. None if this" \
            "machine has internet access, or you keep the install ISO."
-    if confirm "    Remove the offline package repository? (frees $(human_bytes "$repo_other_bytes"))" "y"; then
+    if confirm "    Remove the offline package repository? (frees $(human_bytes "$repo_other_bytes"))" "$OFFLINE_REPO_DEFAULT"; then
         effect "a later GPU swap would need internet or a reinstall to get the" \
                "matching driver branch; the drivers now installed keep working."
         if confirm "    [1a] Also remove the ${#nvidia_debs[@]} cached NVIDIA driver debs? (frees a further $(human_bytes "$nvidia_bytes"))" "n"; then

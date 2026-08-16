@@ -1,6 +1,7 @@
 {
     "chat.tools.terminal.autoApprove": {
         "mkdir": true,
-        "mv": true
+        "mv": true,
+        "true": true
     }
 }

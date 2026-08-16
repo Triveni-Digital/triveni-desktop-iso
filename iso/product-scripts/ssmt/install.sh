@@ -18,6 +18,15 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+if dpkg --audit | grep -q .; then
+	echo "[ssmt/install] Repairing incomplete package configuration"
+	if ! dpkg --configure -a; then
+		echo "[ssmt/install][error] Incomplete packages could not be configured" >&2
+		#exit 1
+	fi
+fi
+
+
 # Install only the last matching local SSMT package in ROOT_DIR, if /opt/ssmt exists.
 shopt -s nullglob
 ssmt_debs=("$ROOT_DIR"/ssmt_*.deb)
