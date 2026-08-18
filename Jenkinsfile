@@ -1,9 +1,8 @@
 pipeline {
     agent {
         dockerfile {
-            // This tells Jenkins exactly which file to use
             filename 'Dockerfile'
-            // ISO assembly mounts filesystems and therefore must run as root.
+            additionalBuildArgs "-t triveni-desktop-24.04-main"
             args '--user 0:0 --privileged -e HOME=${WORKSPACE} -v /var/lib/jenkins/userContent:/mnt/userContent'
         }
     }
@@ -26,6 +25,10 @@ pipeline {
     }
 
     post {
+        cleanup {
+            deleteDir()
+        }
+
 //         always {
 //             // This runs inside the container as root and
 //             // gives ownership back to the jenkins user (usually UID 111 or 1000)

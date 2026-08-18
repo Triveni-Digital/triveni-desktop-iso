@@ -1,6 +1,0 @@
-# The hardware driver debs ship inside the triveni-drivers package itself; these are
-# the only packages its install.sh pulls from the archive.
-linux-generic
-linux-headers-generic
-ubuntu-drivers-common
-software-properties-common
