@@ -25,15 +25,18 @@ pipeline {
     }
 
     post {
+        always {
+            sh '''#!/bin/bash
+set -euo pipefail
+
+workspace_owner="$(stat -c '%u:%g' "$WORKSPACE/.git")"
+chown -R "$workspace_owner" "$WORKSPACE"
+'''
+        }
         cleanup {
             deleteDir()
         }
 
-//         always {
-//             // This runs inside the container as root and
-//             // gives ownership back to the jenkins user (usually UID 111 or 1000)
-//             sh 'chown -R 111:117 .'
-//         }
         success {
             // Grabs the output file from the dist folder
             archiveArtifacts artifacts: 'dist/*.iso', fingerprint: true
