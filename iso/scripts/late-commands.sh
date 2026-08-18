@@ -177,7 +177,7 @@ main() {
 
 	local failed_steps=0
 	local step
-	for step in copy_target_log copy_install_payloads copy_driver_payloads \
+	for step in copy_install_payloads copy_driver_payloads \
 		copy_resources copy_first_boot_payloads copy_product_scripts; do
 		if ! "$step"; then
 			echo "WARNING: late-commands step failed, continuing: $step"
@@ -185,13 +185,16 @@ main() {
 		fi
 	done
 
-	if [ "$SKIP_PRODUCT_SCRIPTS" = false ]; then
-		execute_product_scripts || echo "WARNING: product late-commands scan reported errors"
-	else
-		echo "Skipping product late-command scripts"
-	fi
+	# --skip-product-scripts only suppresses *in-target-late-commands.sh, which curtin
+	# runs separately inside the target; the remaining product scripts still run here.
+	execute_product_scripts || echo "WARNING: product late-commands scan reported errors"
 
 	echo "Completed late-commands.sh: ${failed_steps} setup step failure(s)."
+
+	# Snapshot the installer log last so the target copy includes this script's output;
+	# in-target scripts append to the target copy from here on.
+	sleep 1
+	copy_target_log
 	exit 0
 }
 

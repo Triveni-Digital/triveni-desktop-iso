@@ -1,4 +1,5 @@
 #!/bin/bash
+# Copyright (c) 2026. Triveni Digital LLC, All rights reserved.
 
 # This script runs the Triveni Digital System ISO in a QEMU virtual machine with hardware acceleration.
 # The docker-create-iso.sh script calls this script right after running with the -d option, which forces 
@@ -13,7 +14,8 @@ VHD_IMAGE="triveni-test-vm.qcow2"
 VHD_DISKSIZE="200G"
 VHD_CPUS="8,sockets=1,cores=8,threads=1"
 VHD_MEMORY=8192
-SSH_FORWARD_PORT=2222
+SSH_FORWARD_PORT=2122
+HTTP_FORWARD_PORT=2180
 FORCE_DELETE=false
 REUSE_EXISTING=false
 DISABLE_NETWORK=false
@@ -44,6 +46,14 @@ check_ssh_forward_port() {
     if command -v ss >/dev/null 2>&1 &&
         ss -ltnH "sport = :$SSH_FORWARD_PORT" | grep -q .; then
         echo "ERROR: Host port $SSH_FORWARD_PORT is already in use; SSH forwarding cannot start." >&2
+        return 1
+    fi
+}
+
+check_http_forward_port() {
+    if command -v ss >/dev/null 2>&1 &&
+        ss -ltnH "sport = :$HTTP_FORWARD_PORT" | grep -q .; then
+        echo "ERROR: Host port $HTTP_FORWARD_PORT is already in use; HTTP forwarding cannot start." >&2
         return 1
     fi
 }
@@ -130,9 +140,11 @@ echo "💡 Note: To release mouse focus back to Windows, press Ctrl+Alt"
 if [ "$DISABLE_NETWORK" = true ]; then
     echo "🌐 Network adapters present but disconnected for this run (-n)"
     echo "SSH is unavailable because the VM has no network backend."
+    echo "HTTP is unavailable because the VM has no network backend."
 else
     check_qemu_ping_permissions
     check_ssh_forward_port
+    check_http_forward_port
 fi
 
 echo "💡💡💡 Enable clipboard integration via the SPICE agent for better copy-paste support."
@@ -173,12 +185,14 @@ if [ "$DISABLE_NETWORK" = true ]; then
 else
         echo "SSH after the installed system has booted:"
         echo "  ssh -p $SSH_FORWARD_PORT triveni@127.0.0.1"
+        echo "HTTP after the installed system has booted:"
+        echo "  http://127.0.0.1:$HTTP_FORWARD_PORT"
         qemu_cmd+=(
             -netdev user,id=net0,net=10.0.2.0/24
             -device virtio-net-pci,netdev=net0,mac=52:54:00:12:34:56
             -netdev user,id=net1,net=192.168.2.10/24,hostfwd=tcp:127.0.0.1:${SSH_FORWARD_PORT}-:22
             -device virtio-net-pci,netdev=net1,mac=52:54:00:12:34:57
-            -netdev user,id=net2,net=192.168.2.20/24
+            -netdev user,id=net2,net=192.168.2.20/24,hostfwd=tcp:127.0.0.1:${HTTP_FORWARD_PORT}-:80
             -device virtio-net-pci,netdev=net2,mac=52:54:00:12:34:58
             -netdev user,id=net3,net=192.168.2.30/24
             -device virtio-net-pci,netdev=net3,mac=52:54:00:12:34:59

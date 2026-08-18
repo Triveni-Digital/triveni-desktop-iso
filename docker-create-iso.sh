@@ -18,7 +18,7 @@ HOST_WORKSPACE_DIR="$(pwd)"
 
 CONTAINER_USER_CONTENT="/mnt/userContent"
 CONT_BASE_ISO="${CONTAINER_USER_CONTENT}/ubuntu-24.04-desktop-amd64.iso"
-CONT_DEB_DIRS="${CONTAINER_USER_CONTENT}/mt:${CONTAINER_USER_CONTENT}/xm"
+CONT_DEB_DIRS="${CONTAINER_USER_CONTENT}/mt:${CONTAINER_USER_CONTENT}/xm:${CONTAINER_USER_CONTENT}/triveni-drivers/24.04/main/"
 # ==========================================
 
 echo "🐳 Building Docker image..."
@@ -34,4 +34,4 @@ docker run --rm \
   "$IMAGE_NAME" \
   sh -c "ant -DBASE_ISO_FILE=\$BASE_ISO_FILE -DDEB_DIRS=\$DEB_DIRS"
 
-./qemu-run-iso.sh -d
+# ./qemu-run-iso.sh -r
