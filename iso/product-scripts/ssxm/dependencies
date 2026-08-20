@@ -10,5 +10,7 @@ libvdpau1
 libatomic1
 libnppc12
 libnppicc12
+libnppidei12
+libnppif12
 libnppig12
 libnpps12
