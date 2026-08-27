@@ -25,17 +25,17 @@ pipeline {
     }
 
     post {
-        always {
-            sh '''#!/bin/bash
-set -euo pipefail
+//         always {
+//             sh '''#!/bin/bash
+// set -euo pipefail
 
-workspace_owner="$(stat -c '%u:%g' "$WORKSPACE/.git")"
-chown -R "$workspace_owner" "$WORKSPACE"
-'''
-        }
-        cleanup {
-            deleteDir()
-        }
+// workspace_owner="$(stat -c '%u:%g' "$WORKSPACE/.git")"
+// chown -R "$workspace_owner" "$WORKSPACE"
+// '''
+//         }
+//         cleanup {
+//             deleteDir()
+//         }
 
         success {
             // Grabs the output file from the dist folder
