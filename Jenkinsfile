@@ -3,7 +3,7 @@ pipeline {
         dockerfile {
             filename 'Dockerfile'
             additionalBuildArgs "-t triveni-desktop-24.04-main"
-            args '--user 0:0 --privileged -e HOME=${WORKSPACE} -v /var/lib/jenkins/userContent:/mnt/userContent'
+            args '--no-cache --user 0:0 --privileged -e HOME=${WORKSPACE} -v /var/lib/jenkins/userContent:/mnt/userContent'
         }
     }
     parameters {
