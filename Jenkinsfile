@@ -2,8 +2,8 @@ pipeline {
     agent {
         dockerfile {
             filename 'Dockerfile'
-            additionalBuildArgs "-t triveni-desktop-24.04-main"
-            args '--no-cache --user 0:0 --privileged -e HOME=${WORKSPACE} -v /var/lib/jenkins/userContent:/mnt/userContent'
+            additionalBuildArgs "--no-cache -t triveni-desktop-24.04-main"
+            args '--user 0:0 --privileged -e HOME=${WORKSPACE} -v /var/lib/jenkins/userContent:/mnt/userContent'
         }
     }
     parameters {
@@ -25,17 +25,17 @@ pipeline {
     }
 
     post {
-//         always {
-//             sh '''#!/bin/bash
-// set -euo pipefail
+        always {
+            sh '''#!/bin/bash
+set -euo pipefail
 
-// workspace_owner="$(stat -c '%u:%g' "$WORKSPACE/.git")"
-// chown -R "$workspace_owner" "$WORKSPACE"
-// '''
-//         }
-//         cleanup {
-//             deleteDir()
-//         }
+workspace_owner="$(stat -c '%u:%g' "$WORKSPACE/.git")"
+chown -R "$workspace_owner" "$WORKSPACE"
+'''
+        }
+        cleanup {
+            deleteDir()
+        }
 
         success {
             // Grabs the output file from the dist folder
