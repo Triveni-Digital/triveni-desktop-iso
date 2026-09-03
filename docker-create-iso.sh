@@ -34,4 +34,4 @@ docker run --rm \
   "$IMAGE_NAME" \
   sh -c "ant -DBASE_ISO_FILE=\$BASE_ISO_FILE -DDEB_DIRS=\$DEB_DIRS"
 
-# ./qemu-run-iso.sh -r
+./qemu-run-iso.sh -r

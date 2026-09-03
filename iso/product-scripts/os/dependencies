@@ -9,6 +9,7 @@ openssh-server
 net-tools
 netcat-openbsd|netcat-traditional|netcat
 iputils-ping
+tigervnc
 traceroute
 curl
 wget
